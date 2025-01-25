@@ -1,5 +1,4 @@
-import os
-from flask import Flask, request, jsonify
+import streamlit as st
 from dotenv import load_dotenv
 from resume_parser import parse_resume
 from career_model import CareerPathRecommender
@@ -7,34 +6,29 @@ from career_model import CareerPathRecommender
 # Load environment variables
 load_dotenv()
 
-app = Flask(__name__)
+# Streamlit App
+st.title("Career Path Recommender")
+st.write("Upload your resume to get personalized career path recommendations!")
 
-@app.route('/recommend', methods=['POST'])
-def recommend_career_paths():
-    # Check if a file was uploaded
-    if 'resume' not in request.files:
-        return jsonify({'error': 'No file uploaded'}), 400
-    
-    uploaded_file = request.files['resume']
-    
-    # Ensure the file is a PDF
-    if uploaded_file.filename == '' or not uploaded_file.filename.endswith('.pdf'):
-        return jsonify({'error': 'Invalid file type. Please upload a PDF.'}), 400
+# File uploader for resume
+uploaded_file = st.file_uploader("Upload your resume (PDF only)", type=["pdf"])
 
-    # Parse the resume
-    resume_data = parse_resume(uploaded_file)
+if uploaded_file:
+    try:
+        # Parse the resume
+        st.write("Parsing your resume...")
+        resume_data = parse_resume(uploaded_file)
 
-    # Initialize the recommender
-    recommender = CareerPathRecommender()
+        # Initialize the recommender
+        recommender = CareerPathRecommender()
 
-    # Get recommendations
-    career_paths = recommender.get_recommendations(resume_data)
+        # Get recommendations
+        career_paths = recommender.get_recommendations(resume_data)
 
-    # Check if recommendations are available
-    if isinstance(career_paths, str):
-        return jsonify({'recommendations': career_paths}), 200
-    else:
-        return jsonify({'error': 'No recommendations available.'}), 404
-
-if __name__ == "__main__":
-    app.run(debug=True)
+        # Display the recommendations
+        if isinstance(career_paths, str):
+            st.success(f"Recommended Career Path: {career_paths}")
+        else:
+            st.error("No recommendations available. Please try again with a more detailed resume.")
+    except Exception as e:
+        st.error(f"An error occurred: {str(e)}")
