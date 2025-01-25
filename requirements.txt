@@ -3,4 +3,8 @@ together
 pdfplumber
 python-dotenv
 Flask 
-resume-parser 
+resume-parser
+career-model
+python-dotenv
+
+
