@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 from dotenv import load_dotenv
 from resume_parser import parse_resume
@@ -6,29 +7,34 @@ from career_model import CareerPathRecommender
 # Load environment variables
 load_dotenv()
 
-# Streamlit App
-st.title("Career Path Recommender")
-st.write("Upload your resume to get personalized career path recommendations!")
+# Streamlit app
+st.title("Career Path Recommendation System")
 
-# File uploader for resume
-uploaded_file = st.file_uploader("Upload your resume (PDF only)", type=["pdf"])
+st.sidebar.header("Upload Your Resume")
+uploaded_file = st.sidebar.file_uploader("Choose a PDF file", type=["pdf"])
 
 if uploaded_file:
+    st.write("**Uploaded File:**", uploaded_file.name)
+    
     try:
         # Parse the resume
-        st.write("Parsing your resume...")
+        st.write("Parsing the resume...")
         resume_data = parse_resume(uploaded_file)
-
+        st.success("Resume parsed successfully!")
+        
         # Initialize the recommender
         recommender = CareerPathRecommender()
 
         # Get recommendations
+        st.write("Generating career path recommendations...")
         career_paths = recommender.get_recommendations(resume_data)
-
-        # Display the recommendations
+        
         if isinstance(career_paths, str):
-            st.success(f"Recommended Career Path: {career_paths}")
+            st.success("Recommendations:")
+            st.write(career_paths)
         else:
-            st.error("No recommendations available. Please try again with a more detailed resume.")
+            st.error("No recommendations available.")
     except Exception as e:
-        st.error(f"An error occurred: {str(e)}")
+        st.error(f"An error occurred: {e}")
+else:
+    st.info("Please upload a PDF resume to get career path recommendations.")
